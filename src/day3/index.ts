@@ -43,4 +43,4 @@ export const solve2 = (content: string[]) => {
   return sum;
 };
 
-export const expected2 = null;
+export const expected2 = 93465710;
