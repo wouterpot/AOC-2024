@@ -2,8 +2,8 @@ import * as fs from 'fs';
 const days = [...Array(40).keys()].map((day) => day + 1);
 import R from 'ramda';
 
-describe('Manually', () => {
-  runDay(4);
+xdescribe('Manually', () => {
+  runDay(5);
 });
 
 function runDay(day: number) {
