@@ -3,7 +3,7 @@ const days = [...Array(40).keys()].map((day) => day + 1);
 import R from 'ramda';
 
 describe('Manually', () => {
-  runDay(6);
+  runDay(7);
 });
 
 function runDay(day: number) {
