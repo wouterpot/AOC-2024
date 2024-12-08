@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-export const transform = R.split('\n');
+export const transform = R.pipe(R.split('\n'), R.map(R.identity()));
 
 export const solve1 = (lines: string[]) => {};
 
