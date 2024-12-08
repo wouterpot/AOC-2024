@@ -1,123 +1,86 @@
 import * as R from 'ramda';
+import { add, directions, dirToString, Grid, Grid2D, Pos } from '../grid';
 
-export const transform = R.pipe(R.split('\n'), R.map(R.split('')));
+export const transform = R.pipe(
+  R.split('\n'),
+  R.filter(Boolean),
+  R.map(R.split('')),
+);
 
-const directions = [
-  [-1, 0],
-  [0, 1],
-  [1, 0],
-  [0, -1],
-];
-
-const findCaret = (grid: string[][]): number[] => {
-  for (let x = 0; x < grid.length; x++) {
-    for (let y = 0; y < grid[x].length; y++) {
-      if (grid[x][y] === '^') return [x, y];
+export const solve1 = (rawGrid: Grid<string>) => {
+  const grid = new Grid2D(rawGrid);
+  const pos = grid.findAll((s) => s === '^')[0];
+  const direction = directions[0];
+  const traversedPath = new Set<string>();
+  const action = (pos) => {
+    if (grid.coord(pos)) {
+      grid.set(pos, 'X');
+      traversedPath.add(`${pos[0]},${pos[1]}`);
     }
-  }
-  return undefined;
-};
-
-const countX = (grid: string[][]): number => {
-  let count = 0;
-  for (let x = 0; x < grid.length; x++) {
-    for (let y = 0; y < grid[x].length; y++) {
-      if (grid[x][y] === 'X') count++;
-    }
-  }
-  return count;
-};
-
-const gridToString = (grid: string[][]): string => {
-  return grid.map((row) => row.join('')).join('\n');
-};
-
-let traversedGrid;
-
-export const solve1 = (grid: string[][]) => {
-  let pos = findCaret(grid);
-  console.log(pos);
-  let direction = directions[0];
-  while (
-    pos[0] >= 0 &&
-    pos[0] < grid.length &&
-    pos[1] >= 0 &&
-    pos[1] < grid[0].length
-  ) {
-    let nextPos = [pos[0] + direction[0], pos[1] + direction[1]];
-    if (grid[nextPos[0]]?.[nextPos[1]] === '#') {
-      // turn right
-      direction = directions[(directions.indexOf(direction) + 1) % 4];
-      nextPos = [pos[0] + direction[0], pos[1] + direction[1]];
-    }
-    if (grid[pos[0]]?.[pos[1]]) grid[pos[0]][pos[1]] = 'X';
-    pos = nextPos;
-  }
-  traversedGrid = grid;
-  console.log(gridToString(grid));
-  return countX(grid);
+  };
+  traverseGrid(grid, pos, direction, action);
+  return grid.countSymbol('X');
 };
 
 export const expected1 = 5269;
 
-const findAllHashes = (grid: string[][]): number[][] => {
-  const hashes = [];
-  for (let x = 0; x < grid.length; x++) {
-    for (let y = 0; y < grid[x].length; y++) {
-      if (grid[x][y] === '#') hashes.push([x, y]);
-    }
-  }
-  return hashes;
-};
+export const solve2 = (rawGrid: Grid<string>) => {
+  const grid = new Grid2D(rawGrid);
+  const startPos = grid.findAll((s) => s === '^')[0];
+  const direction = directions[0];
+  const possiblePos = new Set<string>();
+  const guardPath = new Set<string>();
+  const action = (pos, dir) => {
+    const nextPos = add(pos, dir);
+    guardPath.add(`${pos[0]},${pos[1]}`);
+    if (grid.coord(nextPos) === '#') return;
+    if (guardPath.has(`${nextPos[0]},${nextPos[1]}`)) return;
+    grid.set(nextPos, '#');
 
-const dirs = {
-  up: [-1, 0],
-  right: [0, 1],
-  left: [0, -1],
-  down: [1, 0],
-};
-
-const findNearestHash = (
-  pos: number[],
-  grid: string[][],
-  dir: number[],
-): number[] => {
-  let nextPos = [pos[0] + dir[0], pos[1] + dir[1]];
-  while (
-    nextPos[0] >= 0 &&
-    nextPos[0] < grid.length &&
-    nextPos[1] >= 0 &&
-    nextPos[1] < grid[0].length
-  ) {
-    if (grid[nextPos[0]]?.[nextPos[1]] === '#') return nextPos;
-    nextPos = [nextPos[0] + dir[0], nextPos[1] + dir[1]];
-  }
-  return undefined;
-};
-
-export const solve2 = (grid: string[][]) => {
-  // const grid = traversedGrid;
-  const hashes = findAllHashes(grid);
-  const visited = new Set<string>();
-
-  const addToVisited = (x: number, y: number) => {
-    if (x >= 0 && y >= 0 && x < grid.length && y < grid[0].length)
-      visited.add(`${x},${y}`);
+    const traversedPath = new Set<string>();
+    const findCycle = (pos2, dir2) => {
+      const cycle = traversedPath.has(
+        `${pos2[0]},${pos2[1]},${dirToString(dir2)}`,
+      );
+      if (cycle) {
+        possiblePos.add(`${nextPos[0]},${nextPos[1]}`);
+        // console.log(grid.positionsToString(traversedPath, 'X'));
+      }
+      traversedPath.add(`${pos2[0]},${pos2[1]},${dirToString(dir2)}`);
+      return !cycle;
+    };
+    traverseGrid(grid, pos, dir, findCycle);
+    grid.set(nextPos, '.');
   };
-
-  hashes.forEach((hash) => {
-    const [i, j] = hash;
-    const upHash = findNearestHash([i, j + 1], grid, dirs.up);
-    const rightHash = findNearestHash([i + 1, j], grid, dirs.right);
-    const leftHash = findNearestHash([i - 1, j], grid, dirs.left);
-    const downHash = findNearestHash([i, j - 1], grid, dirs.down);
-    if (upHash && rightHash) addToVisited(upHash[0] + 1, rightHash[1] + 1);
-    if (upHash && leftHash) addToVisited(leftHash[0] - 1, upHash[1] + 1);
-    if (downHash && rightHash) addToVisited(downHash[0] + 1, rightHash[1] - 1);
-    if (downHash && leftHash) addToVisited(downHash[0] - 1, leftHash[1] - 1);
-  });
-  console.log(visited);
-  return visited.size;
+  traverseGrid(grid, startPos, direction, action);
+  possiblePos.delete(`${startPos[0]},${startPos[1]}`);
+  // console.log([...possiblePos].join(';'));
+  console.log(grid.positionsToString(possiblePos, '0'));
+  return possiblePos.size;
 };
+
+// 140: too low
+// 1992: too high
+// 1905: wrong
+// 1583: too high (pottootje)
 
 export const expected2 = 140;
+
+function traverseGrid(
+  grid: Grid2D<string>,
+  pos: Pos,
+  direction: Pos,
+  action: (pos: Pos, dir: Pos) => boolean | void,
+) {
+  while (grid.isInside(pos)) {
+    let nextPos = add(pos, direction);
+    if (grid.coord(nextPos) === '#') {
+      // turn right
+      direction = directions[(directions.indexOf(direction) + 1) % 4];
+      nextPos = add(pos, direction);
+    }
+    const cont = action(pos, direction);
+    if (cont === false) break;
+    pos = nextPos;
+  }
+}
