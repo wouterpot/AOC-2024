@@ -55,6 +55,14 @@ export class Grid2D<T> {
   toString = (): string => {
     return this.grid.map((row) => row.join('')).join('\n');
   };
+
+  get width() {
+    return this.grid[0].length;
+  }
+
+  get height() {
+    return this.grid.length;
+  }
 }
 
 export type Pos = [number, number];

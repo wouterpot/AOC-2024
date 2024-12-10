@@ -7,7 +7,7 @@ describe('Manually', () => {
 });
 
 describe('Manual example', () => {
-  runDay(11, 'example2`');
+  runDay(10, 'example3');
 });
 
 function runDay(day: number, example?: string) {
