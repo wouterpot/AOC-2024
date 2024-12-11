@@ -3,10 +3,14 @@ const days = [...Array(40).keys()].map((day) => day + 1);
 import R from 'ramda';
 
 describe('Manually', () => {
-  runDay(6);
+  runDay(9);
 });
 
-function runDay(day: number) {
+describe('Manual example', () => {
+  runDay(11, 'example2`');
+});
+
+function runDay(day: number, example?: string) {
   const file = `./day${day}/index`;
   const exists = fs.existsSync(`./src/${file}.ts`);
   if (!exists) return;
@@ -19,16 +23,18 @@ function runDay(day: number) {
   } = require(file);
 
   function partOne(): string {
+    const file = example ?? 'part1';
     const content = fs
-      .readFileSync(`./src/day${day}/inputs/part1.txt`)
+      .readFileSync(`./src/day${day}/inputs/${file}.txt`)
       .toString();
     const result = solve1(transform(content));
     return result;
   }
 
   function partTwo(): string {
+    const file = example ?? 'part2';
     const content = fs
-      .readFileSync(`./src/day${day}/inputs/part2.txt`)
+      .readFileSync(`./src/day${day}/inputs/${file}.txt`)
       .toString();
     const result = solve2(transform(content));
     return result;
@@ -50,3 +56,9 @@ days.forEach((day) => {
     runDay(day);
   });
 });
+
+const day = parseInt(process.argv[2]);
+if (day) {
+  const file = process.argv[3];
+  runDay(day, file);
+}

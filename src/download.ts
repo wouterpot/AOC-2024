@@ -10,10 +10,16 @@ async function downloadDay(day: number) {
   await downloadFile(day, 'part2');
 
   // Copy file from ./src/template/index.ts to ./src/day{day}/index.ts
-  const template = fs.readFileSync('./src/template/index.ts', 'utf8');
-  const path = `./src/day${day}/index.ts`;
+  copyFile(day);
+  copyFile(day, 'index.spec.ts');
+}
+
+function copyFile(day: number, file = 'index.ts') {
+  const template = fs.readFileSync(`./src/template/${file}`, 'utf8');
+  const path = `./src/day${day}/${file}`;
   fs.writeFileSync(path, template);
 }
+
 async function downloadFile(day: number, file: string) {
   const path = `./src/day${day}/inputs/${file}.txt`;
 

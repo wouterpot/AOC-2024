@@ -1,7 +1,7 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import R from 'ramda';
 
-const [, , day] = process.argv;
+const [, , day, inputFile] = process.argv;
 
 const file = `./day${day}/index`;
 const exists = fs.existsSync(`./src/${file}.ts`);
@@ -16,8 +16,9 @@ const {
 
 function partOne(): string {
   if (!solve1) return '';
+  const part = inputFile ?? 'part1';
   const content = fs
-    .readFileSync(`./src/day${day}/inputs/part1.txt`)
+    .readFileSync(`./src/day${day}/inputs/${part}.txt`)
     .toString();
   const result = solve1(transform(content));
   return result;
@@ -25,8 +26,9 @@ function partOne(): string {
 
 function partTwo(): string {
   if (!solve2) return '';
+  const part = inputFile ?? 'part1';
   const content = fs
-    .readFileSync(`./src/day${day}/inputs/part2.txt`)
+    .readFileSync(`./src/day${day}/inputs/${part}.txt`)
     .toString();
   const result = solve2(transform(content));
   return result;
